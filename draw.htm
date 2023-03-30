@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MOJICODE_DISP</title>
+<style>
+	canvas
+	{
+		width : 1024px;
+		height :600x;
+	}
+</style>
+<script src="include.js" type="text/javascript"></script>
+<script>
+
+var textbf = [];
+var screen;
+var fprint;
+
+var UTFconv = [];
+
+document.onkeypress = (e) => {
+	// form1に入力されたキーを取得
+    const key = e.keyCode || e.charCode || 0;
+    // 13はEnterキーのキーコード
+    if (key == 13) {
+        enter();
+    }
+}
+
+function start_r(){
+
+    const canvas = document.getElementById("Layer0");
+    canvas.setAttribute("width", 640);
+    canvas.setAttribute("height",400);
+
+    const ctx = canvas.getContext("2d");
+    ctx.scale(1.0,2.5);
+    screen = new DisplayControl(ctx, 640, 400, 0, 0, "use" );
+
+    screen.clear("Black");
+
+    for (let i in map){
+        for (let j in map[i]){
+            if (map[i][j] != 0){
+                UTFconv[ map[i][j] ] = { x: j, y: i};
+            }
+        }
+    }
+
+    document.getElementById("dsp_e").innerHTML = "kanji character table setup complete.";
+
+    fprint = new fontPrintControl(
+         screen, 
+         "pict/k12x8_jisx0201c.png", 6, 8,
+         "pict/k12x8_jisx0208c.png",12, 8
+    );
+
+    screen.draw();
+
+}
+
+function test(){
+
+	let outstr = "";
+	let str = document.getElementById("inp").value; //.toUpperCase();
+	let codeunit = convertCodeUnits(str);
+
+    let ws = "";
+    for (let i in codeunit){
+        let n =  parseInt(codeunit[i],16);
+
+        if (n < 128) ws += "(ASCII)";
+
+        if (n >= parseInt("FF60",16) && n <= parseInt("FF9F",16)) ws += "(半角カナ)"; 
+
+        if (UTFconv[n] !== void 0){
+            ws += "(" + UTFconv[n].x + "." + UTFconv[n].y + ")" ;
+        }
+    }
+	document.getElementById("dsp_e").innerHTML = "CODE:" + codeunit + "<br>" + ws;
+
+    return codeunit;
+}
+
+function enter(){
+
+    const LINE = 19;
+    const ROWH = 8;
+
+    let str = document.getElementById("inp").value; //.toUpperCase();
+    let lst = str + ":" + test() +"<br>";
+
+    txtctrl(str);
+
+    let w = "";
+    for (let i in textbf){
+        if (i > (textbf.length-LINE)){
+            w +=textbf[i] + "<br>";
+        }
+    }
+    document.getElementById("dsp_r").innerHTML = w ;
+
+    var stline = 1;
+
+    screen.clear("Black");
+
+    fprint.mput("表示確認用画面:DisplayCheck:ﾋｮｳｼﾞｶｸﾆﾝｶﾞﾒﾝ ㍻35/03/30作成。",0,0);
+    for (let i in textbf){
+        if (i > (textbf.length-LINE)){
+            //screen.fill(0, stline*ROWH+10, textbf[i].length*4, 2, "white");
+
+            fprint.mput(textbf[i], 0, stline*ROWH);
+
+            stline++;
+        }
+    }
+
+    //fprint.testprint_a(100,100);
+    //fprint.testprint_k(200,200);
+
+    screen.draw();
+}
+
+function txtctrl(str){
+
+    textbf.push(str);
+}
+
+// 文字列をCode Unit(16進数)の配列にして返す
+function convertCodeUnits(str) {
+    const codeUnits = [];
+    for (let i = 0; i < str.length; i++) {
+    //    codeUnits.push(str.charCodeAt(i).toString(16));
+        codeUnits.push(str.charCodeAt(i).toString(16));
+    }
+    return codeUnits;
+}
+
+</script>
+</head>
+<body onLoad="start_r()">
+MOJICODE＿DISP<hr>
+<canvas id = "Layer0"></canvas><hr>
+入力欄:
+<input type="text" id="inp" onKeyUp="test()" aria-label="入力欄">
+<input type="button" id="btn" value="send" onclick="enter()"><br>
+
+<p id="dsp_e"></p>
+<hr>
+<p id="dsp_r"></p>
+<hr>
+
+</body>
+</html>
