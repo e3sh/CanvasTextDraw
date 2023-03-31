@@ -18,7 +18,7 @@ var textbf = [];
 var screen;
 var fprint;
 
-var UTFconv = [];
+var UTFconv = [];//今のところ、global でこれを作っとかないとfontPrintControlが動かない。2023/3/31
 
 document.onkeypress = (e) => {
 	// form1に入力されたキーを取得
@@ -36,12 +36,13 @@ function start_r(){
     canvas.setAttribute("height",400);
 
     const ctx = canvas.getContext("2d");
-    ctx.scale(1.0,2.5);
+    ctx.scale(1.0,2.0);
     screen = new DisplayControl(ctx, 640, 400, 0, 0, "use" );
 
-    screen.clear("Black");
+    screen.clear("blue");
 
     for (let i in map){
+        //map これもglobalで最初に宣言している。変換マップ(横軸:点,縦軸:区で内容がUTF-16の2次元配列/utfmap.js)
         for (let j in map[i]){
             if (map[i][j] != 0){
                 UTFconv[ map[i][j] ] = { x: j, y: i};
@@ -58,7 +59,6 @@ function start_r(){
     );
 
     screen.draw();
-
 }
 
 function test(){
@@ -86,7 +86,7 @@ function test(){
 
 function enter(){
 
-    const LINE = 19;
+    const LINE = 25;
     const ROWH = 8;
 
     let str = document.getElementById("inp").value; //.toUpperCase();
@@ -102,15 +102,15 @@ function enter(){
     }
     document.getElementById("dsp_r").innerHTML = w ;
 
-    var stline = 1;
+    var stline = 0;
 
-    screen.clear("Black");
+    screen.clear("black");
 
-    fprint.mput("表示確認用画面:DisplayCheck:ﾋｮｳｼﾞｶｸﾆﾝｶﾞﾒﾝ ㍻35/03/30作成。",0,0);
+    fprint.putchr("表示確認用画面:DispCheck:ﾋｮｳｼﾞｶｸﾆﾝｶﾞﾒﾝ ㍻35/03/30作成。",0,0, 2);
+
     for (let i in textbf){
         if (i > (textbf.length-LINE)){
             //screen.fill(0, stline*ROWH+10, textbf[i].length*4, 2, "white");
-
             fprint.mput(textbf[i], 0, stline*ROWH);
 
             stline++;

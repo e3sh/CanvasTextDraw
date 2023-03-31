@@ -17,10 +17,11 @@ function fontPrintControl( screen, asciiPtn, aw, ah, KanjiPtn, kw, kh ) {
     function charCodeToLoc(code){
 
         let kanjif = false;
-        let x, y, w, h;
+        let x, y, w, h, t;
 
         w = 4;
         h = 12;
+        t = 0;
 
         if (code < 128){
             x = Math.floor(code%16)*aw;
@@ -28,6 +29,7 @@ function fontPrintControl( screen, asciiPtn, aw, ah, KanjiPtn, kw, kh ) {
             w = aw;
             h = ah;
             //ascii
+            t = 0;
         }
 
         if (code >= parseInt("FF60",16) 
@@ -40,6 +42,7 @@ function fontPrintControl( screen, asciiPtn, aw, ah, KanjiPtn, kw, kh ) {
             w = aw;
             h = ah;
             //半角カナ
+            t = 1;
         } 
 
         if (UTFconv[code] !== void 0){
@@ -55,6 +58,8 @@ function fontPrintControl( screen, asciiPtn, aw, ah, KanjiPtn, kw, kh ) {
                 h = kh;
     
                 kanjif = true;
+
+                t = 2;
         //    }
         }
    
@@ -67,9 +72,9 @@ function fontPrintControl( screen, asciiPtn, aw, ah, KanjiPtn, kw, kh ) {
         r.y = y;
         r.w = w;
         r.h = h;
+        r.type = t;
 
         return r;
-
     }
 
     this.testprint_a = function(x, y){
@@ -82,12 +87,9 @@ function fontPrintControl( screen, asciiPtn, aw, ah, KanjiPtn, kw, kh ) {
         buffer_.fillRect(x, y, 100, 100, "yellow");
         //buffer_.drawImgXY(KanjiPtn,x, y);
         buffer_.drawImgXY(pica,x, y);
-        
     }
 
     this.mput = function(str, x, y){
-        let sa = str.split("");
-
 
         for (let i = 0, loopend = str.length; i < loopend; i++) {
             let n = str.charCodeAt(i);
@@ -117,7 +119,6 @@ function fontPrintControl( screen, asciiPtn, aw, ah, KanjiPtn, kw, kh ) {
 
         if (!Boolean(z)) {
             z = 1.0;
-
         } else {
             if (z != 1.0) zflag = true;
         }
@@ -125,26 +126,23 @@ function fontPrintControl( screen, asciiPtn, aw, ah, KanjiPtn, kw, kh ) {
         for (var i = 0, loopend = str.length; i < loopend; i++) {
             var n = str.charCodeAt(i);
 
-            if ((n >= 32) && (n < 128)) { // space ～ "~" まで
-                var d = sp_ch_ptn[n - 32];
+            let d = charCodeToLoc(n);
 
-                var wx = x + i * (d.w * z);
-                var wy = y;
-                if (zflag) {
-                    wx += (-d.w / 2) * z;
-                    wy += (-d.h / 2) * z;
-                }
-
-                buffer_.drawImgXYWHXYWH(
-                    tex_c,
-                    d.x, d.y, d.w, d.h,
-                    wx, wy,
-                    d.w * z, d.h * z
-                );
+            let wx = x;
+            let wy = y;
+            if (zflag) {
+                //wx += (-d.w / 2) * z;
+                //wy += (-d.h / 2) * z;
             }
-        }
-        //
-    }
 
+            buffer_.drawImgXYWHXYWH(
+                d.img,
+                d.x, d.y, d.w-1, d.h-1,
+                wx, wy,
+                Math.floor(d.w * z), Math.floor(d.h * z)
+            );
+            x = x + (d.w * z);
+        }
+    }
 }
 
