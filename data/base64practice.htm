@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Base64encoreDecore Practice</title>
+
+<script>
+function start_r(){
+    //const map = [12288,12289,12290,65292,65294,12539,65306,65307,65311,65281,12443,12444,180,65344,0,0,0,0,0];
+    for (let i in map){
+        document.getElementById("dsp_e").innerHTML += i + ':' +  map[i].toString() + '<br>';
+
+        const base64 = Uint16toBase64(new Uint16Array(map[i]));
+        document.getElementById("dsp_r").innerHTML += ',["' + base64  + '"]<br>';
+    }
+
+    /*
+    document.getElementById("dsp_e").innerHTML = "Original:<br>" +  map[0].toString() + "<br>";
+
+    const base64 = Uint16toBase64(new Uint16Array(map[0]));
+    document.getElementById("dsp_r").innerHTML = "Encode:<br>" + base64  + "<br>";
+
+    const ret = Base64toUint16(base64);
+
+    document.getElementById("dsp_r").innerHTML += "Decode:<br>" + ret.toString()  + "<br>";
+    */
+}
+
+//encoder
+function Uint16toBase64(ui16ary){
+
+    const decodeBinaryString = uint8Array => uint8Array.reduce(
+        (binaryString, uint8) => binaryString + String.fromCharCode(uint8),
+        '',
+    );
+    const arrayBufferA = ui16ary.buffer;
+    const uint8ArrayA = new Uint8Array(arrayBufferA);
+    console.log(uint8ArrayA.toString());
+
+    const binaryStringA = decodeBinaryString(uint8ArrayA);
+    const base64 = btoa(binaryStringA);
+
+    return base64
+}
+//decoder
+function Base64toUint16(b64str){
+
+    const encodeBinaryString = binaryString => Uint8Array.from(
+        binaryString,
+        binaryChar => binaryChar.charCodeAt(0),
+    );
+
+    const binaryStringB = atob(b64str);
+    const uint8ArrayB = encodeBinaryString(binaryStringB);
+    console.log(uint8ArrayB.toString());
+
+    const arrayBuffer = new Uint16Array(uint8ArrayB.buffer);
+
+    return arrayBuffer;
+}
+
+</script>
+<script src="utfmap.js" type="text/javascript"></script>
+</head>
+<body onLoad="start_r()">
+Base64encoreDecore Practice<hr>
+
+<p id="dsp_e"></p>
+<hr>
+<p id="dsp_r"></p>
+<hr>
+
+</body>
+</html>
